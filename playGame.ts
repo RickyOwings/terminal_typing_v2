@@ -1,8 +1,7 @@
-import hideCursor from 'hide-terminal-cursor';
-import showCursor from 'show-terminal-cursor';
+import hideCursor from 'hide-terminal-cursor'
+import showCursor from 'show-terminal-cursor'
 import chalk from 'chalk';
-import readline from 'readline'
-import { emitKeypressEvents } from 'readline';
+import readline from 'readline';
 
 interface KEYPRESS {
     sequence : string,
@@ -37,7 +36,10 @@ export async function playGame(words: string[], charWidth: number){
 
     // called everytime a key is pressed
     process.stdin.on('keypress', (str,key: KEYPRESS)=>{
-        if(key.ctrl == true && key.name == 'c') process.exit();
+        if(key.ctrl == true && key.name == 'c') {
+            showCursor();
+            process.exit()
+        };
         userString = userInputUpdate(userString, key);
         if(printGameState(userString, targetString, charWidth)) {
             showCursor();
@@ -74,7 +76,6 @@ function printGameState(userString: string, targetString: string, charWidth: num
     // iterate through each character sequentially
     for(
         let c = 0, // index of char user is on
-        byWordChar = 0, // index for checking if word is too long
         widthChar = 1, // index that wraps to zero when the width has been overflowed
         doEnter = false; // boolean that stored whether or not to add \n
         c < targetString.length; 
@@ -89,7 +90,6 @@ function printGameState(userString: string, targetString: string, charWidth: num
 
         // when a char is space, increment word index and byWordChar
         if (tChar == " ") {
-            byWordChar += wordLengths[wordIndex];
             wordIndex ++;
             if (widthChar + wordLengths[wordIndex] > charWidth){
                 widthChar = 1;
@@ -99,7 +99,7 @@ function printGameState(userString: string, targetString: string, charWidth: num
 
         // target char is untyped by user
         if (uChar == ""){
-            dispString += (c == userString.length) ? chalk.bgGray(tChar) : tChar
+            dispString += (c == userString.length) ? chalk.bgGray(tChar) : tChar;
             if (doEnter) dispString += "\n";
             continue;
         }
@@ -136,9 +136,10 @@ function printGameState(userString: string, targetString: string, charWidth: num
  * string. ["word", "word"] -> "word word"
  */
 function listToString(words: string[]): string{
-    let retString = "";
+    let retString: string = "";
+    console.log(words)
     for(let i = 0; i < words.length; i++){
-        retString+=words[i];
+        retString += words[i];
         if (i != words.length-1) retString += " ";
     }
     return retString;

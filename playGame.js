@@ -30,8 +30,11 @@ export function playGame(words, charWidth) {
             process.stdin.setRawMode(true);
         // called everytime a key is pressed
         process.stdin.on('keypress', (str, key) => {
-            if (key.ctrl == true && key.name == 'c')
+            if (key.ctrl == true && key.name == 'c') {
+                showCursor();
                 process.exit();
+            }
+            ;
             userString = userInputUpdate(userString, key);
             if (printGameState(userString, targetString, charWidth)) {
                 showCursor();
@@ -59,7 +62,6 @@ function printGameState(userString, targetString, charWidth) {
     let wordLengths = wordLengthArray(targetString);
     // iterate through each character sequentially
     for (let c = 0, // index of char user is on
-    byWordChar = 0, // index for checking if word is too long
     widthChar = 1, // index that wraps to zero when the width has been overflowed
     doEnter = false; // boolean that stored whether or not to add \n
      c < targetString.length; c++, widthChar++,
@@ -70,7 +72,6 @@ function printGameState(userString, targetString, charWidth) {
         let uChar = (c < userString.length) ? userString[c] : "";
         // when a char is space, increment word index and byWordChar
         if (tChar == " ") {
-            byWordChar += wordLengths[wordIndex];
             wordIndex++;
             if (widthChar + wordLengths[wordIndex] > charWidth) {
                 widthChar = 1;
@@ -115,6 +116,7 @@ function printGameState(userString, targetString, charWidth) {
  */
 function listToString(words) {
     let retString = "";
+    console.log(words);
     for (let i = 0; i < words.length; i++) {
         retString += words[i];
         if (i != words.length - 1)

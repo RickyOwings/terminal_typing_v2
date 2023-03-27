@@ -1,5 +1,5 @@
 import { getWords } from './getWords.js';
-import { playGame } from './playGame.js'
+import { playGame }from './playGame.js'
 import { wait } from './wait.js'
 
 const WORD_COUNT = 30;
@@ -43,7 +43,7 @@ function generateRandomWords(words: string[], count: number): string[]{
     let ret_words: string[] = [];
     for (let i = 0; i < count; i++){
         let rand = Math.floor(Math.random() * words.length);
-        ret_words.push(words[rand]);
+        ret_words.push(words[rand].replace("\r", ""));
     }
     return ret_words;
 }

@@ -1,0 +1,11 @@
+{
+  "type": "module",
+  "devDependencies": {
+    "@types/node": "^18.15.10"
+  },
+  "dependencies": {
+    "chalk": "^5.2.0",
+    "hide-terminal-cursor": "^0.0.1",
+    "show-terminal-cursor": "^0.0.2"
+  }
+}

@@ -17,12 +17,14 @@ import readline from 'readline';
 export function playGame(words, charWidth) {
     return __awaiter(this, void 0, void 0, function* () {
         hideCursor();
+        let firstType = true;
+        // keeping this one here because it causes issues with typescript
         let timeStart = Date.now();
         // string that represents the users input
         let userString = "";
         // string that represents what the user is trying to type
         let targetString = listToString(words);
-        printGameState(userString, targetString, charWidth);
+        printGameState(userString, targetString, charWidth, timeStart);
         // add the ability to listen for keypresses
         readline.emitKeypressEvents(process.stdin);
         // dont know what this does, but I saw this on the example
@@ -35,8 +37,12 @@ export function playGame(words, charWidth) {
                 process.exit();
             }
             ;
+            if (firstType) {
+                firstType = false;
+                timeStart = Date.now();
+            }
             userString = userInputUpdate(userString, key);
-            if (printGameState(userString, targetString, charWidth)) {
+            if (printGameState(userString, targetString, charWidth, timeStart)) {
                 showCursor();
                 let timeEnd = Date.now();
                 let deltaTime = timeEnd - timeStart;
@@ -52,7 +58,7 @@ CPM: ${targetString.length / dTimeMin}
         });
     });
 }
-function printGameState(userString, targetString, charWidth) {
+function printGameState(userString, targetString, charWidth, startMS) {
     // the string that will be printed to the console
     let dispString = "";
     let dispUString = "";
@@ -105,7 +111,8 @@ function printGameState(userString, targetString, charWidth) {
     for (let i = 0; i < charWidth; i++)
         divider += "-";
     console.clear();
-    console.log(`TYPING TEST\n\n${dispString}\n${divider}\n${dispUString + '|'}`);
+    let timeElapsed = Math.round(((Date.now() - startMS) / 1000) * 100) / 100;
+    console.log(`TYPING TEST | ${timeElapsed} s\n\n${dispString}\n${divider}\n${dispUString + '|'}`);
     if (userString == targetString)
         return true;
     return false;

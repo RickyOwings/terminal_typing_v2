@@ -2,6 +2,7 @@ import hideCursor from 'hide-terminal-cursor'
 import showCursor from 'show-terminal-cursor'
 import chalk from 'chalk';
 import readline from 'readline';
+import { timeStamp } from 'console';
 
 interface KEYPRESS {
     sequence : string,
@@ -18,6 +19,9 @@ interface KEYPRESS {
 export async function playGame(words: string[], charWidth: number){
     hideCursor();
 
+    let firstType : boolean = true;
+
+    // keeping this one here because it causes issues with typescript
     let timeStart = Date.now();
 
     // string that represents the users input
@@ -26,7 +30,7 @@ export async function playGame(words: string[], charWidth: number){
     // string that represents what the user is trying to type
     let targetString = listToString(words);
 
-    printGameState(userString, targetString, charWidth);
+    printGameState(userString, targetString, charWidth, timeStart);
 
     // add the ability to listen for keypresses
     readline.emitKeypressEvents(process.stdin);
@@ -40,8 +44,13 @@ export async function playGame(words: string[], charWidth: number){
             showCursor();
             process.exit()
         };
+        if (firstType) {
+            firstType = false;
+            timeStart = Date.now();
+        }
+
         userString = userInputUpdate(userString, key);
-        if(printGameState(userString, targetString, charWidth)) {
+        if(printGameState(userString, targetString, charWidth, timeStart)) {
             showCursor();
             let timeEnd = Date.now();
             let deltaTime = timeEnd - timeStart;
@@ -61,7 +70,7 @@ CPM: ${targetString.length / dTimeMin}
 
 }
 
-function printGameState(userString: string, targetString: string, charWidth: number): boolean{
+function printGameState(userString: string, targetString: string, charWidth: number, startMS: number): boolean{
     // the string that will be printed to the console
     let dispString = "";
     let dispUString = "";
@@ -124,7 +133,10 @@ function printGameState(userString: string, targetString: string, charWidth: num
     for(let i = 0; i < charWidth; i++) divider += "-";
 
     console.clear()
-    console.log(`TYPING TEST\n\n${dispString}\n${divider}\n${dispUString+'|'}`);
+
+    let timeElapsed = Math.round(((Date.now() - startMS)/1000)*100) / 100;
+
+    console.log(`TYPING TEST | ${timeElapsed} s\n\n${dispString}\n${divider}\n${dispUString+'|'}`);
 
     if (userString == targetString) return true;
     return false;   

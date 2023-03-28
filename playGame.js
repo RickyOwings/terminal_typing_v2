@@ -16,45 +16,50 @@ import readline from 'readline';
  */
 export function playGame(words, charWidth) {
     return __awaiter(this, void 0, void 0, function* () {
-        hideCursor();
-        let firstType = true;
-        // keeping this one here because it causes issues with typescript
-        let timeStart = Date.now();
-        // string that represents the users input
-        let userString = "";
-        // string that represents what the user is trying to type
-        let targetString = listToString(words);
-        printGameState(userString, targetString, charWidth, timeStart);
-        // add the ability to listen for keypresses
-        readline.emitKeypressEvents(process.stdin);
-        // dont know what this does, but I saw this on the example
-        if (process.stdin.isTTY)
-            process.stdin.setRawMode(true);
-        // called everytime a key is pressed
-        process.stdin.on('keypress', (str, key) => {
-            if (key.ctrl == true && key.name == 'c') {
-                showCursor();
-                process.exit();
-            }
-            ;
-            if (firstType) {
-                firstType = false;
-                timeStart = Date.now();
-            }
-            userString = userInputUpdate(userString, key);
-            if (printGameState(userString, targetString, charWidth, timeStart)) {
-                showCursor();
-                let timeEnd = Date.now();
-                let deltaTime = timeEnd - timeStart;
-                let dTimeSec = deltaTime / 1000;
-                let dTimeMin = dTimeSec / 60;
-                console.log(`
-Time Elapsed: ${deltaTime / 1000} seconds
-WPM: ${words.length / dTimeMin}
-CPM: ${targetString.length / dTimeMin}
-            `);
-                process.exit();
-            }
+        return new Promise(function (resolve) {
+            return __awaiter(this, void 0, void 0, function* () {
+                hideCursor();
+                let firstType = true;
+                // keeping this one here because it causes issues with typescript
+                let timeStart = Date.now();
+                // string that represents the users input
+                let userString = "";
+                // string that represents what the user is trying to type
+                let targetString = (typeof words == 'object') ? listToString(words) : words;
+                printGameState(userString, targetString, charWidth, timeStart);
+                // add the ability to listen for keypresses
+                readline.emitKeypressEvents(process.stdin);
+                // dont know what this does, but I saw this on the example
+                if (process.stdin.isTTY)
+                    process.stdin.setRawMode(true);
+                // called everytime a key is pressed
+                process.stdin.on('keypress', (str, key) => {
+                    if (key.ctrl == true && key.name == 'c') {
+                        showCursor();
+                        process.exit();
+                    }
+                    ;
+                    if (firstType) {
+                        firstType = false;
+                        timeStart = Date.now();
+                    }
+                    userString = userInputUpdate(userString, key);
+                    if (printGameState(userString, targetString, charWidth, timeStart)) {
+                        showCursor();
+                        let timeEnd = Date.now();
+                        let wordCount = (typeof words == 'object') ? words.length : words.split(" ").length;
+                        let deltaTime = timeEnd - timeStart;
+                        let dTimeSec = deltaTime / 1000;
+                        let dTimeMin = dTimeSec / 60;
+                        console.log(`
+    Time Elapsed: ${deltaTime / 1000} seconds
+    WPM: ${wordCount / dTimeMin}
+    CPM: ${targetString.length / dTimeMin}
+                `);
+                        resolve();
+                    }
+                });
+            });
         });
     });
 }
@@ -97,7 +102,7 @@ function printGameState(userString, targetString, charWidth, startMS) {
             dispUString += '\n';
         // target char is misstyped
         if (uChar != tChar) {
-            dispString += chalk.red.underline(tChar);
+            dispString += (tChar == " ") ? chalk.bgRed(tChar) : chalk.red.underline(tChar);
             if (doEnter)
                 dispString += "\n";
             continue;

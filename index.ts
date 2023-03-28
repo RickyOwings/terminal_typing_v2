@@ -1,6 +1,11 @@
 import { getWords } from './getWords.js';
 import { playGame }from './playGame.js'
 import { wait } from './wait.js'
+import fs from 'fs';
+import { titlescreen } from './titlescreen.js'
+import modes from './modes.js'
+import GAMEOBJ from './GameObj.js';
+import multipleChoice from './multipleChoice.js';
 
 const WORD_COUNT = 30;
 
@@ -11,28 +16,25 @@ async function main(){
     /**
      * Stores words within given text file
      */
-    let wordsList: string[];
 
-    /**
-     *  
-     */
-    // stores url, if provided
-    let url = (process.argv.length > 2) ? process.argv[2] : null;
+    let gameObj: GAMEOBJ = await titlescreen();
+    if (gameObj.url === null){
+        await startRandomGame({});
+    } else {
+        switch(gameObj.mode){
+            case modes[0]:
+                await startRandomGame({});
+            break;
+            case modes[1]:
+                await startQuoteGame(gameObj.url);
+            break;
+        }
+    }
 
-    // temporary variable to ensure url is valid
-    let tmp: string[] | false = (url != null) ? getWords(url) : getWords();   
-
-    // returns out of main function if url in invalid
-    if (tmp == false){console.log("url invalid"); return;}
-
-    // given url valid, assigns words array to url
-    wordsList = tmp;
-
-    let words = generateRandomWords(wordsList, WORD_COUNT)
-
-    displayTitle();
-
-    playGame(words, CHAR_WIDTH);
+    await wait(3000);
+    let answer = await multipleChoice("Play again?", "Yes", "No");
+    if (answer == "Yes") await main();
+    else process.exit();
 }
 
 
@@ -48,15 +50,27 @@ function generateRandomWords(words: string[], count: number): string[]{
     return ret_words;
 }
 
-
-function displayTitle(){
-    console.log(`
-    +--------------------+
-    |TERMINAL TYPING TEST|
-    +--------------------+
-    `);
+interface StartRandomArgs {
+    url? : null | string,
+    words? : number
 }
 
+function startRandomGame({url = null, words = WORD_COUNT}: StartRandomArgs): Promise<void>{
+    return new Promise(async function(resolve){
+        let wordlist: string[] | false = (url != null) ? getWords(url) : getWords();
+        if (wordlist == false) return;
+        let gameWords = generateRandomWords(wordlist, words);
+        await playGame(gameWords, CHAR_WIDTH);
+        resolve();
+    })
+}
+
+function startQuoteGame(url: string): Promise<void>{
+    return new Promise(async function(resolve){
+        let gameWords = fs.readFileSync(url, {encoding: 'utf-8'});
+        await playGame(gameWords, CHAR_WIDTH);
+        resolve();
+    })
+}
 
 main();
-

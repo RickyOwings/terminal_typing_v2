@@ -9,6 +9,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 export function wait(timeMS) {
     return __awaiter(this, void 0, void 0, function* () {
-        return setTimeout(() => { return; }, timeMS);
+        return new Promise(resolve => {
+            setTimeout(() => {
+                resolve('resolved');
+            }, timeMS);
+        });
     });
 }

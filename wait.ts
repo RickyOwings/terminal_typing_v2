@@ -1,3 +1,7 @@
 export async function wait(timeMS: number){
-    return setTimeout(()=>{return}, timeMS)
+    return new Promise(resolve=>{
+        setTimeout(() => {
+            resolve('resolved'); 
+        }, timeMS);
+    })
 }

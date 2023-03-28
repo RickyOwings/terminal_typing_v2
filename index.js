@@ -9,6 +9,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import { getWords } from './getWords.js';
 import { playGame } from './playGame.js';
+import { wait } from './wait.js';
+import fs from 'fs';
+import { titlescreen } from './titlescreen.js';
+import modes from './modes.js';
+import multipleChoice from './multipleChoice.js';
 const WORD_COUNT = 30;
 const CHAR_WIDTH = 80;
 function main() {
@@ -16,24 +21,26 @@ function main() {
         /**
          * Stores words within given text file
          */
-        let wordsList;
-        /**
-         *
-         */
-        // stores url, if provided
-        let url = (process.argv.length > 2) ? process.argv[2] : null;
-        // temporary variable to ensure url is valid
-        let tmp = (url != null) ? getWords(url) : getWords();
-        // returns out of main function if url in invalid
-        if (tmp == false) {
-            console.log("url invalid");
-            return;
+        let gameObj = yield titlescreen();
+        if (gameObj.url === null) {
+            yield startRandomGame({});
         }
-        // given url valid, assigns words array to url
-        wordsList = tmp;
-        let words = generateRandomWords(wordsList, WORD_COUNT);
-        displayTitle();
-        playGame(words, CHAR_WIDTH);
+        else {
+            switch (gameObj.mode) {
+                case modes[0]:
+                    yield startRandomGame({});
+                    break;
+                case modes[1]:
+                    yield startQuoteGame(gameObj.url);
+                    break;
+            }
+        }
+        yield wait(3000);
+        let answer = yield multipleChoice("Play again?", "Yes", "No");
+        if (answer == "Yes")
+            yield main();
+        else
+            process.exit();
     });
 }
 /**
@@ -47,11 +54,25 @@ function generateRandomWords(words, count) {
     }
     return ret_words;
 }
-function displayTitle() {
-    console.log(`
-    +--------------------+
-    |TERMINAL TYPING TEST|
-    +--------------------+
-    `);
+function startRandomGame({ url = null, words = WORD_COUNT }) {
+    return new Promise(function (resolve) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let wordlist = (url != null) ? getWords(url) : getWords();
+            if (wordlist == false)
+                return;
+            let gameWords = generateRandomWords(wordlist, words);
+            yield playGame(gameWords, CHAR_WIDTH);
+            resolve();
+        });
+    });
+}
+function startQuoteGame(url) {
+    return new Promise(function (resolve) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let gameWords = fs.readFileSync(url, { encoding: 'utf-8' });
+            yield playGame(gameWords, CHAR_WIDTH);
+            resolve();
+        });
+    });
 }
 main();

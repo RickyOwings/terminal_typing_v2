@@ -2,72 +2,67 @@ import hideCursor from 'hide-terminal-cursor'
 import showCursor from 'show-terminal-cursor'
 import chalk from 'chalk';
 import readline from 'readline';
+import { KEYPRESS } from './KEYPRESS.js'
 import { timeStamp } from 'console';
 
-interface KEYPRESS {
-    sequence : string,
-    name: string,
-    ctrl: boolean,
-    meta: boolean,
-    shift: boolean
-}
 
 
 /**
  * Function that handles the typing game
  */
-export async function playGame(words: string[], charWidth: number){
-    hideCursor();
+export async function playGame(words: string[] | string, charWidth: number): Promise<void>{
+    return new Promise(async function(resolve){
 
-    let firstType : boolean = true;
+        hideCursor();
 
-    // keeping this one here because it causes issues with typescript
-    let timeStart = Date.now();
+        let firstType : boolean = true;
 
-    // string that represents the users input
-    let userString = "";
+        // keeping this one here because it causes issues with typescript
+        let timeStart = Date.now();
 
-    // string that represents what the user is trying to type
-    let targetString = listToString(words);
+        // string that represents the users input
+        let userString = "";
 
-    printGameState(userString, targetString, charWidth, timeStart);
+        // string that represents what the user is trying to type
+        let targetString = (typeof words == 'object') ? listToString(words) : words;
 
-    // add the ability to listen for keypresses
-    readline.emitKeypressEvents(process.stdin);
+        printGameState(userString, targetString, charWidth, timeStart);
 
-    // dont know what this does, but I saw this on the example
-    if (process.stdin.isTTY) process.stdin.setRawMode(true);
+        // add the ability to listen for keypresses
+        readline.emitKeypressEvents(process.stdin);
 
-    // called everytime a key is pressed
-    process.stdin.on('keypress', (str,key: KEYPRESS)=>{
-        if(key.ctrl == true && key.name == 'c') {
-            showCursor();
-            process.exit()
-        };
-        if (firstType) {
-            firstType = false;
-            timeStart = Date.now();
-        }
+        // dont know what this does, but I saw this on the example
+        if (process.stdin.isTTY) process.stdin.setRawMode(true);
 
-        userString = userInputUpdate(userString, key);
-        if(printGameState(userString, targetString, charWidth, timeStart)) {
-            showCursor();
-            let timeEnd = Date.now();
-            let deltaTime = timeEnd - timeStart;
-            let dTimeSec = deltaTime/1000;
-            let dTimeMin = dTimeSec/60;
-            console.log(`
-Time Elapsed: ${deltaTime/1000} seconds
-WPM: ${words.length / dTimeMin}
-CPM: ${targetString.length / dTimeMin}
-            `)
+        // called everytime a key is pressed
+        process.stdin.on('keypress', (str,key: KEYPRESS)=>{
+            if(key.ctrl == true && key.name == 'c') {
+                showCursor();
+                process.exit();
+            };
+            if (firstType) {
+                firstType = false;
+                timeStart = Date.now();
+            }
 
+            userString = userInputUpdate(userString, key);
+            if(printGameState(userString, targetString, charWidth, timeStart)) {
+                showCursor();
+                let timeEnd = Date.now();
+                let wordCount = (typeof words == 'object') ? words.length : words.split(" ").length;
+                let deltaTime = timeEnd - timeStart;
+                let dTimeSec = deltaTime/1000;
+                let dTimeMin = dTimeSec/60;
+                console.log(`
+    Time Elapsed: ${deltaTime/1000} seconds
+    WPM: ${wordCount / dTimeMin}
+    CPM: ${targetString.length / dTimeMin}
+                `)
+                resolve();
+            }
+        });
 
-            process.exit();
-        }
-    });
-
-
+    })
 }
 
 function printGameState(userString: string, targetString: string, charWidth: number, startMS: number): boolean{
@@ -119,7 +114,7 @@ function printGameState(userString: string, targetString: string, charWidth: num
 
         // target char is misstyped
         if (uChar != tChar){
-            dispString += chalk.red.underline(tChar);
+            dispString += (tChar == " ") ? chalk.bgRed(tChar) : chalk.red.underline(tChar);
             if (doEnter) dispString += "\n";
             continue;
         }

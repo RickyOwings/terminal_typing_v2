@@ -53,7 +53,7 @@ function printMultipleChoice(question, answers, selectionIndex) {
     let printStr = `${question}\n`;
     for (let i = 0; i < answers.length; i++) {
         if (i == selectionIndex) {
-            printStr += `>${answers[i]}\n`;
+            printStr += chalk.green(`>${answers[i]}\n`);
         }
         else {
             printStr += chalk.gray(`>${answers[i]}\n`);

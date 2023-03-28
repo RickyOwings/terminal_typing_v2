@@ -69,7 +69,12 @@ function startRandomGame({ url = null, words = WORD_COUNT }) {
 function startQuoteGame(url) {
     return new Promise(function (resolve) {
         return __awaiter(this, void 0, void 0, function* () {
-            let gameWords = fs.readFileSync(url, { encoding: 'utf-8' });
+            let gameWords = fs.readFileSync(url, { encoding: 'utf-8' })
+                .replace(/\n/g, " ")
+                .replace(/\r/g, "")
+                .replace(/—/g, "-")
+                .replace(/’/g, "'")
+                .replace(/\0/, "");
             yield playGame(gameWords, CHAR_WIDTH);
             resolve();
         });

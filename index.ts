@@ -67,7 +67,12 @@ function startRandomGame({url = null, words = WORD_COUNT}: StartRandomArgs): Pro
 
 function startQuoteGame(url: string): Promise<void>{
     return new Promise(async function(resolve){
-        let gameWords = fs.readFileSync(url, {encoding: 'utf-8'});
+        let gameWords = fs.readFileSync(url, {encoding: 'utf-8'})
+        .replace(/\n/g, " ")
+        .replace(/\r/g, "")
+        .replace(/—/g, "-")
+        .replace(/’/g,"'")
+        .replace(/\0/, "")
         await playGame(gameWords, CHAR_WIDTH);
         resolve();
     })
